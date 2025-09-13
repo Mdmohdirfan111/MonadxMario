@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-eval' https://cdn.jsdelivr.net/npm/;">
+    
+    <title>Monad Mario</title>
+    
+    <link rel="stylesheet" href="./style.css">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="landing-page">
+        <div class="container">
+            <h1>MONAD MARIO</h1>
+            <p class="subtitle">An Onchain Adventure on Monad</p>
+            
+            <button id="connectWalletBtn" class="btn">CONNECT WALLET</button>
+            
+            <button id="getGmonadBtn" class="btn btn-secondary">Get Daily Gmonad (Optional)</button>
+            
+            <div class="social-links">
+                Follow: <a href="https://x.com/Irrfan_eth" target="_blank">@Irrfan_eth</a> & 
+                <a href="https://x.com/monad_xyz" target="_blank">@monad_xyz</a>
+                <br>
+                Join: <a href="https://discord.gg/monad" target="_blank">Monad Discord</a>
+            </div>
+            
+            <button id="playGameBtn" class="btn btn-primary" disabled>PLAY GAME</button>
+            
+            <footer>
+                Developed by <a href="https://x.com/Irrfan_eth" target="_blank">Irfan</a>
+            </footer>
+        </div>
+    </div>
+
+    <div id="game-container" style="display: none;">
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="message-box" style="display: none;">
+            <h2 id="message-title"></h2>
+            <button id="next-action-btn" class="btn"></button>
+        </div>
+    </div>
+
+    <script src="./main.js" type="module"></script>
+</body>
+</html>
