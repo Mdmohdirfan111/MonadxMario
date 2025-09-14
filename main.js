@@ -2,10 +2,11 @@
 // MAIN.JS - Game ka Core Logic
 //
 // Changes:
-// 1. Code ko `stages.js` aur `drawing.js` se import karne ke liye update kiya gaya hai.
-// 2. Purane drawing functions ko naye advanced functions se replace kar diya hai.
-// 3. Camera logic ko behtar banaya gaya hai taaki woh naye levels par smooth kaam kare.
-// 4. Disconnect wallet ka feature bhi ismein included hai.
+// 1. **BUG FIX:** Player ke girne waala issue theek kar diya hai.
+// 2. Code ko `stages.js` aur `drawing.js` se import karne ke liye update kiya gaya hai.
+// 3. Purane drawing functions ko naye advanced functions se replace kar diya hai.
+// 4. Camera logic ko behtar banaya gaya hai taaki woh naye levels par smooth kaam kare.
+// 5. Disconnect wallet ka feature bhi ismein included hai.
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -112,6 +113,7 @@ window.onload = () => {
         
         // Saare platforms aur enemies ko set up karna
         currentStageData.platforms.forEach(p => { 
+            p.width = p.w; // <<<< YEH LINE MISSING THI
             p.height = p.h || 20; 
             if (p.type === 'moving') { p.originalX = p.x; p.originalY = p.y; p.speed = p.s; p.distance = p.dist; } 
         });
