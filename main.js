@@ -2,9 +2,8 @@
 // MAIN.JS - Game ka Core Logic
 //
 // Changes:
-// 1. **BUG FIX:** "Mint NFT Reward" button ab stage complete hone par hamesha enabled rahega.
-// 2. **BUG FIX:** Enemy ko kill karne par ab player ko 50 points milenge.
-// 3. **IMPROVEMENT:** Code mein ek check daala hai taaki agar `stages.js` se coins ka data na mile, toh game crash na ho.
+// 1. **BUG FIX:** Falling platforms ab har baar player ke out hone par reset ho jaayenge.
+// 2. Baaki saara logic pehle jaisa hi hai.
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -50,7 +49,7 @@ window.onload = () => {
     function showMessage(title, buttonText, onButtonClick) {
         messageTitle.innerText = title;
         nextActionBtn.innerText = buttonText;
-        nextActionBtn.disabled = false; // <<< BUG FIX 1: Button ko hamesha enable karna
+        nextActionBtn.disabled = false;
         messageBox.style.display = 'block';
         nextActionBtn.onclick = onButtonClick;
     }
@@ -111,7 +110,6 @@ window.onload = () => {
         projectiles = []; 
         particles = [];
         
-        // Agar stages.js mein coins na ho, toh game crash hone se bachana
         if (!currentStageData.coins) {
             currentStageData.coins = [];
             console.warn(`Level ${currentStage} mein coins ka data nahi mila. 'stages.js' file check karein.`);
@@ -120,7 +118,10 @@ window.onload = () => {
         currentStageData.platforms.forEach(p => { 
             p.width = p.w; 
             p.height = p.h || 20; 
-            if (p.type === 'moving') { p.originalX = p.x; p.originalY = p.y; p.speed = p.s; p.distance = p.dist; } 
+            if (p.type === 'moving') { p.originalX = p.x; p.originalY = p.y; p.speed = p.s; p.distance = p.dist; }
+            if (p.type === 'falling') { // <<< BUG FIX YAHAN HAI
+                p.isFalling = false; // Falling state ko reset karna
+            }
         });
         currentStageData.enemies.forEach(e => { 
             e.width = 40; e.height = 40;
@@ -198,7 +199,7 @@ window.onload = () => {
             if (isColliding) {
                 const wasAbove = (prevPlayerY + player.height) <= e.y + 10;
                 if (player.dy > 0 && wasAbove) {
-                    score += 50; // <<< BUG FIX 2: Enemy ko kill karne par score add karna
+                    score += 50; 
                     e.isDead = true; 
                     player.dy = -10; 
                     createParticles(e.x + e.width / 2, e.y, 30, '#ff4136');
