@@ -5,7 +5,7 @@
 // 1. **BUG FIX:** Player ke platform par "sink" hone waala issue theek kar diya hai.
 // 2. **NEW FEATURE:** Coins aur Score ka logic add kiya gaya hai.
 // 3. Code ko `stages.js` aur `drawing.js` ke naye versions ke hisaab se update kiya gaya hai.
-// =4. Camera logic, disconnect feature, etc. pehle jaise hi hain.
+// 4. Disconnect feature aur baaki sab pehle jaisa hi hai.
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -111,6 +111,7 @@ window.onload = () => {
         projectiles = []; 
         particles = [];
         
+        // Yeh line 'w' ko 'width' mein convert karti hai - YAHI BUG FIX HAI
         currentStageData.platforms.forEach(p => { 
             p.width = p.w; 
             p.height = p.h || 20; 
@@ -199,14 +200,16 @@ window.onload = () => {
         });
 
         // Player aur coins ka collision check
-        currentStageData.coins.forEach((coin, i) => {
-            const isColliding = player.x < coin.x + 30 && player.x + player.width > coin.x && player.y < coin.y + 30 && player.y + player.height > coin.y;
-            if (isColliding) {
-                score += 10;
-                createParticles(coin.x + 15, coin.y + 15, 15, 'gold', 3);
-                currentStageData.coins.splice(i, 1);
-            }
-        });
+        if (currentStageData.coins) {
+            currentStageData.coins.forEach((coin, i) => {
+                const isColliding = player.x < coin.x + 30 && player.x + player.width > coin.x && player.y < coin.y + 30 && player.y + player.height > coin.y;
+                if (isColliding) {
+                    score += 10;
+                    createParticles(coin.x + 15, coin.y + 15, 15, 'gold', 3);
+                    currentStageData.coins.splice(i, 1);
+                }
+            });
+        }
         
         projectiles.forEach(p => { if (player.x < p.x + p.w && player.x + player.width > p.x && player.y < p.y + p.h && player.y + player.height > p.y) resetPlayer(); });
         
@@ -243,7 +246,9 @@ window.onload = () => {
         ctx.translate(-camera.x, -camera.y);
         
         currentStageData.platforms.forEach(p => drawPlatform(ctx, p));
-        currentStageData.coins.forEach(c => drawCoin(ctx, c));
+        if (currentStageData.coins) {
+            currentStageData.coins.forEach(c => drawCoin(ctx, c));
+        }
         projectiles.forEach(p => drawProjectile(ctx, p));
         drawParticles(ctx, particles);
         drawFlag(ctx, currentStageData.goal);
