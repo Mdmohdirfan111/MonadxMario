@@ -1,273 +1,247 @@
-
 // ===================================================================================
-// DRAWING.JS - Saare advanced visual effects aur character designs yahan hain
+// DRAWING.JS - Saare visual elements (art, effects) yahan hain
 // ===================================================================================
 
-// --- Helper Functions ---
-// Do numbers ke beech random value nikalne ke liye
-function random(min, max) {
-    return Math.random() * (max - min) + min;
-}
+let backgroundElements = [];
+let frame = 0; // Animation ke liye frame counter
 
-// --- Background Elements ---
-// Background mein dikhne waale saare dynamic objects (stars, gears, etc.)
-let bgElements = [];
-
+// Background ko initialize karna
 export function initializeBackground(canvas) {
-    // Stars banana
-    for (let i = 0; i < 150; i++) {
-        bgElements.push({
+    backgroundElements = [];
+    // Stars
+    for (let i = 0; i < 100; i++) {
+        backgroundElements.push({
             type: 'star',
-            x: random(0, 10000),
-            y: random(0, 2000),
-            size: random(1, 3),
-            parallax: random(0.1, 0.3) // Dheere move honge
+            x: Math.random() * canvas.width * 5,
+            y: Math.random() * canvas.height * 2,
+            size: Math.random() * 2 + 1,
+            parallax: Math.random() * 0.4 + 0.1,
+            opacity: Math.random() * 0.5 + 0.3
         });
     }
-    // Gears banana
+    // Gears, UFOs, Rockets
     for (let i = 0; i < 20; i++) {
-        bgElements.push({
-            type: 'gear',
-            x: random(0, 10000),
-            y: random(0, 2000),
-            size: random(20, 80),
-            rotation: random(0, 360),
-            speed: random(-0.2, 0.2),
-            parallax: random(0.4, 0.6)
-        });
-    }
-    // UFOs aur Rockets banana
-     for (let i = 0; i < 10; i++) {
-        bgElements.push({
-            type: i % 2 === 0 ? 'ufo' : 'rocket',
-            x: random(0, 10000),
-            y: random(100, canvas.height * 0.7),
-            size: random(30, 60),
-            speed: random(0.5, 1.5),
-            parallax: random(0.7, 0.9) // Sabse tez move honge
+        const type = ['gear', 'ufo', 'rocket'][Math.floor(Math.random() * 3)];
+        backgroundElements.push({
+            type: type,
+            x: Math.random() * 50000,
+            y: Math.random() * 2000,
+            size: Math.random() * 40 + 20,
+            parallax: Math.random() * 0.3 + 0.6,
+            rotation: 0,
+            speed: (Math.random() - 0.5) * 0.5
         });
     }
 }
 
-// Poora dynamic background draw karne ka function
+// Background ko draw karna
 export function drawBackground(ctx, camera, canvas) {
-    // Gradient background
-    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bgGradient.addColorStop(0, '#0d0d1a');
-    bgGradient.addColorStop(1, '#1a1a3d');
-    ctx.fillStyle = bgGradient;
+    ctx.fillStyle = '#0d0d1a';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Saare background elements ko draw karna
-    bgElements.forEach(el => {
-        // Parallax effect ke liye position calculate karna
-        const parallaxX = el.x - camera.x * el.parallax;
-        const parallaxY = el.y - camera.y * 0.5; // Y-axis par kam parallax
-
-        ctx.save();
-        ctx.translate(parallaxX, parallaxY);
-
-        switch (el.type) {
-            case 'star':
-                ctx.fillStyle = `rgba(255, 255, 255, ${random(0.5, 1)})`;
-                ctx.fillRect(0, 0, el.size, el.size);
-                break;
-            case 'gear':
-                ctx.rotate(el.rotation * Math.PI / 180);
-                drawGear(ctx, el.size);
-                el.rotation += el.speed; // Gear ko ghumaana
-                break;
-            case 'ufo':
-                drawUFO(ctx, el.size);
-                el.x += el.speed; // UFO ko move karna
-                if (el.x > 10000) el.x = 0; // Screen se bahar jaane par wapas laana
-                break;
-            case 'rocket':
-                 drawRocket(ctx, el.size);
-                 el.x += el.speed; // Rocket ko move karna
-                 if (el.x > 10000) el.x = 0;
-                 break;
-        }
-        ctx.restore();
-    });
-}
-
-
-// --- Game Asset Drawing Functions ---
-
-// Naya Monad Player Character
-export function drawPlayer(ctx, player) {
-    const bodyHeight = player.height * 0.7;
-    const headRadius = player.width / 2.5;
-    const bounce = Math.sin(Date.now() / 150) * 2; // Halki si bounce animation
-
-    ctx.save();
-    ctx.translate(player.x + player.width / 2, player.y + bounce);
-
-    // Body
-    ctx.fillStyle = '#9b59b6'; // Purple color
-    ctx.beginPath();
-    ctx.roundRect(-player.width / 2, 0, player.width, bodyHeight, [15]);
-    ctx.fill();
     
-    // Glowing Eye
-    const eyeX = player.facing * (player.width * 0.15);
-    const eyeY = -headRadius * 0.2;
-    ctx.fillStyle = 'white';
-    ctx.shadowColor = '#f1c40f';
-    ctx.shadowBlur = 15;
-    ctx.beginPath();
-    ctx.arc(eyeX, eyeY, headRadius * 0.6, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Pupil
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = 'black';
-    ctx.beginPath();
-    ctx.arc(eyeX + player.facing, eyeY, headRadius * 0.2, 0, Math.PI * 2);
-    ctx.fill();
+    frame++;
 
-    ctx.restore();
-}
+    backgroundElements.forEach(el => {
+        const drawX = (el.x - camera.x * el.parallax) % (canvas.width + el.size) - el.size;
+        const drawY = (el.y - camera.y * el.parallax);
 
-// Naye Enemies
-export function drawEnemy(ctx, enemy) {
-     ctx.save();
-     ctx.translate(enemy.x + enemy.width / 2, enemy.y + enemy.height / 2);
-     
-     if(enemy.type === 'patrol') { // Floating Drone
-        ctx.fillStyle = '#e74c3c'; // Red
-        ctx.beginPath();
-        ctx.arc(0, 0, enemy.width/2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = 'white';
-        ctx.fillRect(-enemy.width * 0.1, -enemy.height * 0.1, enemy.width * 0.2, enemy.height*0.2);
-     } else if (enemy.type === 'shooter') { // Turret
-        ctx.fillStyle = '#e67e22'; // Orange
-        ctx.fillRect(-enemy.width/2, 0, enemy.width, enemy.height/2);
-        ctx.fillStyle = '#d35400';
-        ctx.beginPath();
-        ctx.arc(0, 0, enemy.width/2.5, 0, Math.PI, true);
-        ctx.fill();
-        // Glowing light before shooting
-        if (enemy.shootCooldown < 30) {
-            ctx.fillStyle = 'red';
-            ctx.shadowColor = 'red';
-            ctx.shadowBlur = 15;
+        if (drawY < -el.size || drawY > canvas.height + el.size) return;
+        
+        ctx.globalAlpha = el.opacity || 1;
+        
+        if (el.type === 'star') {
+            ctx.fillStyle = 'white';
             ctx.beginPath();
-            ctx.arc(0, enemy.height * 0.1, 5, 0, Math.PI * 2);
+            ctx.arc(drawX, drawY, el.size / 2, 0, Math.PI * 2);
             ctx.fill();
-            ctx.shadowBlur = 0;
+        } else if (el.type === 'gear') {
+             el.rotation += el.speed / 20;
+             ctx.strokeStyle = '#334155';
+             ctx.lineWidth = 4;
+             ctx.save();
+             ctx.translate(drawX, drawY);
+             ctx.rotate(el.rotation);
+             ctx.beginPath();
+             for (let i = 0; i < 8; i++) {
+                 ctx.rect(-el.size/2, -el.size/2, el.size, el.size);
+             }
+             ctx.stroke();
+             ctx.restore();
+        } else if (el.type === 'ufo') {
+            el.x += el.speed;
+            ctx.fillStyle = '#94a3b8';
+            ctx.beginPath();
+            ctx.ellipse(drawX, drawY, el.size, el.size / 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#e2e8f0';
+            ctx.beginPath();
+            ctx.ellipse(drawX, drawY - el.size/3, el.size/2, el.size / 3, 0, 0, Math.PI * 2);
+            ctx.fill();
         }
-     }
-     ctx.restore();
-}
-
-// Platforms
-export function drawPlatform(ctx, p) {
-    ctx.fillStyle = '#888';
-    if (p.type === 'moving') ctx.fillStyle = '#bada55';
-    else if (p.type === 'falling' && p.isFalling) ctx.fillStyle = '#f08080';
-    
-    ctx.fillRect(p.x, p.y, p.width, p.height);
-    
-    // Neon outline
-    ctx.strokeStyle = ctx.fillStyle;
-    ctx.lineWidth = 2;
-    ctx.globalAlpha = 0.5;
-    ctx.strokeRect(p.x, p.y, p.width, p.height);
-    ctx.globalAlpha = 1;
-}
-
-// Goal Portal
-export function drawGoal(ctx, goal) {
-    const time = Date.now() / 500;
-    const radius = goal.w / 2;
-    ctx.save();
-    ctx.translate(goal.x + radius, goal.y + radius);
-    
-    for(let i=0; i<5; i++) {
-        const angle = time + i * 0.5;
-        const x = Math.cos(angle) * radius * 0.5;
-        const y = Math.sin(angle) * radius * 0.5;
-        ctx.fillStyle = `hsl(${ (time * 20 + i * 50) % 360 }, 100%, 70%)`;
-        ctx.beginPath();
-        ctx.arc(x, y, radius / 5, 0, Math.PI * 2);
-        ctx.fill();
-    }
-    
-    ctx.restore();
-}
-
-// Projectiles
-export function drawProjectile(ctx, p) {
-    const gradient = ctx.createRadialGradient(p.x, p.y, 2, p.x, p.y, p.w);
-    gradient.addColorStop(0, 'white');
-    gradient.addColorStop(1, '#FF851B');
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, p.w/2, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-// Particles
-export function drawParticles(ctx, particles) {
-    particles.forEach(p => {
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = p.life / 30; // Fade out effect
-        ctx.fillRect(p.x, p.y, p.size || 3, p.size || 3);
         ctx.globalAlpha = 1;
     });
 }
 
-// --- Specific Asset Drawing (used by background) ---
-function drawGear(ctx, size) {
-    const teeth = 8;
-    const innerRadius = size * 0.3;
-    const outerRadius = size * 0.5;
-    ctx.strokeStyle = '#6c7a89';
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    for (let i = 0; i < teeth * 2; i++) {
-        const radius = i % 2 === 0 ? outerRadius : innerRadius;
-        const angle = (i * Math.PI) / teeth;
-        ctx.lineTo(radius * Math.cos(angle), radius * Math.sin(angle));
-    }
-    ctx.closePath();
-    ctx.stroke();
-}
+// Naya Cartoon Player
+export function drawPlayer(ctx, player) {
+    const x = player.x;
+    const y = player.y;
+    const w = player.width;
+    const h = player.height;
+    
+    const bodyBob = player.onGround ? Math.sin(frame / 5) * 2 : 0;
 
-function drawUFO(ctx, size) {
-    // Dome
-    ctx.fillStyle = '#a2ded0';
-    ctx.beginPath();
-    ctx.arc(0, 0, size / 2, Math.PI, 0);
-    ctx.fill();
-    // Base
-    ctx.fillStyle = '#d0d0d0';
-    ctx.beginPath();
-    ctx.ellipse(0, 0, size, size / 3, 0, 0, Math.PI * 2);
-    ctx.fill();
-}
-
-function drawRocket(ctx, size) {
+    ctx.save();
+    ctx.translate(x + w / 2, y + h + bodyBob);
+    
     // Body
-    ctx.fillStyle = '#f2f2f2';
+    ctx.fillStyle = '#8b5cf6'; // Purple
     ctx.beginPath();
-    ctx.moveTo(-size/2, size/2);
-    ctx.lineTo(size/2, size/2);
-    ctx.lineTo(size/2, -size/4);
-    ctx.lineTo(0, -size/2);
-
-    ctx.closePath();
+    ctx.moveTo(-w / 2, 0);
+    ctx.quadraticCurveTo(0, -h, w / 2, 0);
     ctx.fill();
-    // Flame
-     const flameSize = Math.random() * size * 0.6 + size * 0.2;
-    ctx.fillStyle = '#f39c12';
+
+    // Eye
+    ctx.fillStyle = 'white';
     ctx.beginPath();
-    ctx.moveTo(-size/4, size/2);
-    ctx.lineTo(size/4, size/2);
-    ctx.lineTo(0, size/2 + flameSize);
+    ctx.arc(0, -h/2, w/4, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Pupil
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    const pupilX = player.facing > 0 ? w/12 : -w/12;
+    ctx.arc(pupilX, -h/2, w/8, 0, Math.PI * 2);
+    ctx.fill();
+    
+    ctx.restore();
+}
+
+// Naya Cartoon Enemy
+export function drawEnemy(ctx, enemy) {
+    const x = enemy.x;
+    const y = enemy.y;
+    const w = enemy.width;
+    const h = enemy.height;
+    
+    const bob = Math.sin((frame + x) / 10) * 4;
+
+    ctx.save();
+    ctx.translate(x + w / 2, y + h / 2 + bob);
+
+    // Body
+    if (enemy.type === 'shooter') {
+        ctx.fillStyle = '#f97316'; // Orange
+    } else {
+        ctx.fillStyle = '#ef4444'; // Red
+    }
+    ctx.beginPath();
+    ctx.arc(0, 0, w / 2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Spikes (for patrol)
+    if(enemy.type === 'patrol') {
+        ctx.fillStyle = '#b91c1c';
+        for(let i = 0; i < 8; i++) {
+            ctx.rotate(Math.PI / 4);
+            ctx.fillRect(-5, -h/2 - 5, 10, 10);
+        }
+    }
+
+    // Eye
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(0, 0, w / 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = 'black';
+    ctx.beginPath();
+    ctx.arc(0, 0, w/8, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// Platform ko draw karna
+export function drawPlatform(ctx, p) {
+    let color = '#64748b';
+    if (p.type === 'moving') color = '#0ea5e9';
+    if (p.type === 'falling') color = '#f59e0b';
+    
+    ctx.fillStyle = color;
+    ctx.fillRect(p.x, p.y, p.width, p.height);
+    // Top highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fillRect(p.x, p.y, p.width, 5);
+}
+
+// Goal ko Flag se replace kiya
+export function drawFlag(ctx, goal) {
+    const poleX = goal.x + 10;
+    const poleY = goal.y;
+    const poleHeight = goal.h || 120;
+    
+    // Pole
+    ctx.fillStyle = '#94a3b8';
+    ctx.fillRect(poleX, poleY, 10, poleHeight);
+
+    // Flag
+    const flagY = poleY + Math.sin(frame / 20) * 10;
+    ctx.fillStyle = '#22c55e';
+    ctx.beginPath();
+    ctx.moveTo(poleX + 10, flagY);
+    ctx.lineTo(poleX + 70, flagY + 20);
+    ctx.lineTo(poleX + 10, flagY + 40);
     ctx.closePath();
     ctx.fill();
 }
+
+// Coin ko draw karna
+export function drawCoin(ctx, coin) {
+    const bob = Math.sin((frame + coin.x) / 8) * 3;
+    const size = 30;
+    
+    ctx.save();
+    ctx.translate(coin.x + size/2, coin.y + size/2 + bob);
+
+    // Coin body
+    ctx.fillStyle = '#facc15'; // Gold
+    ctx.beginPath();
+    ctx.arc(0, 0, size/2, 0, Math.PI*2);
+    ctx.fill();
+
+    // Highlight
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+    ctx.beginPath();
+    ctx.arc(-5, -5, size/4, 0, Math.PI*2);
+    ctx.fill();
+    
+    ctx.restore();
+}
+
+// Score ko draw karna
+export function drawScore(ctx, score, canvas) {
+    ctx.font = "24px 'Press Start 2P'";
+    ctx.fillStyle = "white";
+    ctx.textAlign = "left";
+    ctx.fillText(`SCORE: ${score}`, 20, 40);
+}
+
+
+export function drawProjectile(ctx, p) {
+    ctx.fillStyle = '#f97316';
+    ctx.beginPath();
+    ctx.arc(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+export function drawParticles(ctx, particles) {
+    particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 30;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    });
+}
+
