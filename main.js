@@ -1,7 +1,7 @@
 // ===================================================================================
 // MAIN.JS - Sirf Game ka Logic
 // ===================================================================================
-import { connectWallet, mintNFTReward, walletState } from './wallet.js';
+import { connectWallet, disconnectWallet, mintNFTReward, walletState } from './wallet.js';
 
 // Page load hote hi yeh function chalega
 window.onload = () => {
@@ -27,6 +27,7 @@ window.onload = () => {
     const keys = { right: false, left: false, up: false };
 
     // PART 2: UI aur EVENT LISTENERS
+
     function showMessage(title, buttonText, onButtonClick) {
         messageTitle.innerText = title;
         nextActionBtn.innerText = buttonText;
@@ -34,15 +35,49 @@ window.onload = () => {
         nextActionBtn.onclick = onButtonClick;
     }
     
-    // Connect Wallet button ka event
-    connectWalletBtn.addEventListener('click', async () => {
-        const success = await connectWallet(showMessage);
-        if (success) {
-            connectWalletBtn.textContent = `${walletState.userAddress.substring(0, 5)}...${walletState.userAddress.substring(walletState.userAddress.length - 4)}`;
+    // --- Naye UI update functions ---
+    function updateUIForConnection() {
+        if (walletState.userAddress) {
+            connectWalletBtn.textContent = `Disconnect (${walletState.userAddress.substring(0, 4)}...${walletState.userAddress.substring(walletState.userAddress.length - 4)})`;
             playGameBtn.disabled = false;
-            connectWalletBtn.disabled = true;
+        }
+    }
+
+    function resetUIToDisconnected() {
+        disconnectWallet();
+        connectWalletBtn.textContent = 'CONNECT WALLET';
+        playGameBtn.disabled = true;
+    }
+
+    // --- Connect/Disconnect Wallet button ka naya logic ---
+    connectWalletBtn.addEventListener('click', async () => {
+        if (walletState.userAddress) {
+            // Agar pehle se connected hai, toh disconnect karo
+            resetUIToDisconnected();
+        } else {
+            // Agar connected nahi hai, toh connect karo
+            const success = await connectWallet(showMessage);
+            if (success) {
+                updateUIForConnection();
+            }
         }
     });
+
+    // MetaMask se account change ya disconnect detect karna
+    if (window.ethereum) {
+        window.ethereum.on('accountsChanged', (accounts) => {
+            if (accounts.length === 0) {
+                // User ne disconnect kiya hai
+                console.log('User has disconnected their wallet.');
+                resetUIToDisconnected();
+            } else {
+                // Account switch hua hai. UI reset karke user ko dobara connect karne ke liye bolna
+                console.log('Account switched to:', accounts[0]);
+                alert('You have switched accounts. Please connect again.');
+                resetUIToDisconnected();
+            }
+        });
+    }
 
     playGameBtn.addEventListener('click', () => {
         landingPage.style.display = 'none';
@@ -52,7 +87,7 @@ window.onload = () => {
     
     getGmonadBtn.addEventListener('click', () => window.open('https://faucet.monad.xyz/', '_blank'));
 
-    // PART 3: STAGE DATA
+    // PART 3: STAGE DATA (No changes here)
     const stageData = [
         {
             level: 1, width: 5000, height: 800,
@@ -73,7 +108,7 @@ window.onload = () => {
         },
     ];
 
-    // PART 4: CORE GAME ENGINE
+    // PART 4: CORE GAME ENGINE (No changes here)
     function initStage(levelNumber) {
         const level = stageData.find(s => s.level === levelNumber);
         if (!level) { 
@@ -147,13 +182,15 @@ window.onload = () => {
         camera.update(); updateParticles();
     }
     
-    // Minting ka process handle karne ke liye function
     async function handleMintReward() {
         nextActionBtn.disabled = true; nextActionBtn.innerText = "Minting...";
         const success = await mintNFTReward(currentStage);
         if (success) {
             alert(`Congratulations! You've minted the NFT for Stage ${currentStage}!`);
             initStage(currentStage + 1);
+        } else {
+            // Agar minting fail hoti hai, toh button ko wapas enable kar do
+            nextActionBtn.innerText = "Mint NFT Reward";
         }
         nextActionBtn.disabled = false;
     }
@@ -173,7 +210,7 @@ window.onload = () => {
         ctx.restore();
     }
 
-    // PART 5: HELPER FUNCTIONS
+    // PART 5: HELPER FUNCTIONS (No changes here)
     function resetPlayer() { createParticles(player.x + player.width / 2, player.y + player.height / 2, 50, '#ff4136'); player.x = currentStageData.playerStart.x; player.y = currentStageData.playerStart.y; player.dx = 0; player.dy = 0; }
     function createParticles(x, y, c, color) { for (let i = 0; i < c; i++)particles.push({ x: x, y: y, dx: (Math.random() - 0.5) * 8, dy: (Math.random() - 0.5) * 8, life: 30, color: color }); }
     function updateParticles() { particles.forEach((p, i) => { p.x += p.dx; p.y += p.dy; p.life--; if (p.life <= 0) particles.splice(i, 1); }); }
@@ -197,8 +234,7 @@ window.onload = () => {
         }
     }
 
-    // PART 6: KEYBOARD INPUT
+    // PART 6: KEYBOARD INPUT (No changes here)
     window.addEventListener('keydown', e => { if (e.code === 'ArrowRight') keys.right = true; else if (e.code === 'ArrowLeft') keys.left = true; else if (e.code === 'ArrowUp' || e.code === 'Space') keys.up = true; });
     window.addEventListener('keyup', e => { if (e.code === 'ArrowRight') keys.right = false; else if (e.code === 'ArrowLeft') keys.left = false; else if (e.code === 'ArrowUp' || e.code === 'Space') keys.up = false; });
 };
-
