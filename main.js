@@ -2,10 +2,9 @@
 // MAIN.JS - Game ka Core Logic
 //
 // Changes:
-// 1. **BUG FIX:** Player ke platform par "sink" hone waala issue theek kar diya hai.
-// 2. **NEW FEATURE:** Coins aur Score ka logic add kiya gaya hai.
-// 3. Code ko `stages.js` aur `drawing.js` ke naye versions ke hisaab se update kiya gaya hai.
-// 4. Disconnect feature aur baaki sab pehle jaisa hi hai.
+// 1. **BUG FIX:** "Mint NFT Reward" button ab stage complete hone par hamesha enabled rahega.
+// 2. **BUG FIX:** Enemy ko kill karne par ab player ko 50 points milenge.
+// 3. **IMPROVEMENT:** Code mein ek check daala hai taaki agar `stages.js` se coins ka data na mile, toh game crash na ho.
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -51,6 +50,7 @@ window.onload = () => {
     function showMessage(title, buttonText, onButtonClick) {
         messageTitle.innerText = title;
         nextActionBtn.innerText = buttonText;
+        nextActionBtn.disabled = false; // <<< BUG FIX 1: Button ko hamesha enable karna
         messageBox.style.display = 'block';
         nextActionBtn.onclick = onButtonClick;
     }
@@ -111,14 +111,19 @@ window.onload = () => {
         projectiles = []; 
         particles = [];
         
-        // Yeh line 'w' ko 'width' mein convert karti hai - YAHI BUG FIX HAI
+        // Agar stages.js mein coins na ho, toh game crash hone se bachana
+        if (!currentStageData.coins) {
+            currentStageData.coins = [];
+            console.warn(`Level ${currentStage} mein coins ka data nahi mila. 'stages.js' file check karein.`);
+        }
+        
         currentStageData.platforms.forEach(p => { 
             p.width = p.w; 
             p.height = p.h || 20; 
             if (p.type === 'moving') { p.originalX = p.x; p.originalY = p.y; p.speed = p.s; p.distance = p.dist; } 
         });
         currentStageData.enemies.forEach(e => { 
-            e.width = 40; e.height = 40; // Enemy size change
+            e.width = 40; e.height = 40;
             e.isDead = false; 
             if (e.type === 'patrol') { e.originalX = e.x; e.speed = e.s; e.distance = e.dist; } 
             if (e.type === 'shooter') { e.shootCooldown = Math.random() * 100 + 80; } 
@@ -146,7 +151,7 @@ window.onload = () => {
     }
 
     function update() {
-        if (!player) return; // Player load hone tak wait karna
+        if (!player) return;
 
         // Player movement
         if (keys.right) { player.dx = player.speed; player.facing = 1; } 
@@ -177,7 +182,7 @@ window.onload = () => {
         currentStageData.platforms.forEach(p => { 
             if (player.x + player.width > p.x && player.x < p.x + p.width && player.y + player.height > p.y && player.y < p.y + p.height) {
                 if (player.dx !== 0 && (prevPlayerY + player.height > p.y && prevPlayerY < p.y + p.height)) { player.x -= player.dx; }
-                if (player.dy > 0 && prevPlayerY + player.height <= p.y + 1) { // Thoda sa tolerance add kiya
+                if (player.dy > 0 && prevPlayerY + player.height <= p.y + 1) { 
                     player.dy = 0; player.onGround = true; player.y = p.y - player.height; 
                     if (p.type === 'moving') player.x += p.speed; 
                     if (p.type === 'falling') p.isFalling = true; 
@@ -191,29 +196,32 @@ window.onload = () => {
             if (e.isDead) return;
             const isColliding = player.x < e.x + e.width && player.x + player.width > e.x && player.y < e.y + e.height && player.y + player.height > e.y;
             if (isColliding) {
-                const wasAbove = (prevPlayerY + player.height) <= e.y + 10; // Tolerance badhaya
+                const wasAbove = (prevPlayerY + player.height) <= e.y + 10;
                 if (player.dy > 0 && wasAbove) {
-                    e.isDead = true; player.dy = -10; createParticles(e.x + e.width / 2, e.y, 30, '#ff4136');
+                    score += 50; // <<< BUG FIX 2: Enemy ko kill karne par score add karna
+                    e.isDead = true; 
+                    player.dy = -10; 
+                    createParticles(e.x + e.width / 2, e.y, 30, '#ff4136');
                     setTimeout(() => { const index = currentStageData.enemies.indexOf(e); if (index > -1) currentStageData.enemies.splice(index, 1); }, 200);
-                } else { resetPlayer(); }
+                } else { 
+                    resetPlayer(); 
+                }
             }
         });
 
         // Player aur coins ka collision check
-        if (currentStageData.coins) {
-            currentStageData.coins.forEach((coin, i) => {
-                const isColliding = player.x < coin.x + 30 && player.x + player.width > coin.x && player.y < coin.y + 30 && player.y + player.height > coin.y;
-                if (isColliding) {
-                    score += 10;
-                    createParticles(coin.x + 15, coin.y + 15, 15, 'gold', 3);
-                    currentStageData.coins.splice(i, 1);
-                }
-            });
-        }
+        currentStageData.coins.forEach((coin, i) => {
+            const isColliding = player.x < coin.x + 30 && player.x + player.width > coin.x && player.y < coin.y + 30 && player.y + player.height > coin.y;
+            if (isColliding) {
+                score += 10;
+                createParticles(coin.x + 15, coin.y + 15, 15, 'gold', 3);
+                currentStageData.coins.splice(i, 1);
+            }
+        });
         
         projectiles.forEach(p => { if (player.x < p.x + p.w && player.x + player.width > p.x && player.y < p.y + p.h && player.y + player.height > p.y) resetPlayer(); });
         
-        const goal = currentStageData.goal; goal.w = 80; goal.h = 120; // Flag ke liye height badhayi
+        const goal = currentStageData.goal; goal.w = 80; goal.h = 120;
         if (player.x + player.width > goal.x && player.x < goal.x + goal.w && player.y + player.height > goal.y && player.y < goal.y + goal.h) {
             gameRunning = false;
             createParticles(goal.x + goal.w / 2, goal.y + goal.h / 2, 100, 'gold');
@@ -231,7 +239,6 @@ window.onload = () => {
             alert(`Congratulations! You've minted the NFT for Stage ${currentStage}!`);
             initStage(currentStage + 1);
         } else {
-            // Agar minting fail ho toh button ko wapas enable karna
              nextActionBtn.disabled = false;
              nextActionBtn.innerText = "Mint NFT Reward";
         }
@@ -246,9 +253,7 @@ window.onload = () => {
         ctx.translate(-camera.x, -camera.y);
         
         currentStageData.platforms.forEach(p => drawPlatform(ctx, p));
-        if (currentStageData.coins) {
-            currentStageData.coins.forEach(c => drawCoin(ctx, c));
-        }
+        currentStageData.coins.forEach(c => drawCoin(ctx, c));
         projectiles.forEach(p => drawProjectile(ctx, p));
         drawParticles(ctx, particles);
         drawFlag(ctx, currentStageData.goal);
@@ -258,7 +263,6 @@ window.onload = () => {
         
         ctx.restore();
 
-        // Score ko UI ke upar, ek fixed jagah par draw karna
         drawScore(ctx, score, canvas);
     }
 
