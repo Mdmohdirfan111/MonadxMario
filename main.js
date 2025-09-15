@@ -2,8 +2,8 @@
 // MAIN.JS - Game ka Core Logic
 //
 // Changes:
-// 1. **BUG FIX:** Player ke out hone par moving objects (enemies, platforms) ab
-//    tez nahi honge. Game loop ko theek kar diya gaya hai taaki woh dobara na shuru ho.
+// 1. **BUG FIX:** Stage complete karne ke baad ab agla stage sahi se load hoga.
+//    Game loop ko rokne ke bajaye ab game ko pause karne ka naya logic daala gaya hai.
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -31,7 +31,7 @@ window.onload = () => {
     landingPage.style.display = 'block';
     gameContainer.style.display = 'none';
 
-    let gameRunning = false, currentStage = 0, score = 0;
+    let gameRunning = false, currentStage = 0, score = 0, gamePaused = false;
     let player, camera;
     let particles = [];
     let currentStageData = { platforms: [], enemies: [], goal: {}, coins: [] };
@@ -96,7 +96,7 @@ window.onload = () => {
     function initStage(levelNumber) {
         const level = stageData.find(s => s.level === levelNumber);
         if (!level) { 
-            gameRunning = false;
+            gameRunning = false; // Game ko poori tarah se rok do
             showMessage("YOU WIN!", "Play Again?", () => location.reload());
             return;
         }
@@ -129,20 +129,20 @@ window.onload = () => {
             } 
         };
         
+        gamePaused = false; // Naye stage ke liye game ko unpause karo
         gameRunning = true; 
-        messageBox.style.display = 'none'; 
-        // gameLoop() ko yahan se hata diya gaya hai
+        messageBox.style.display = 'none';
     }
 
     function gameLoop() { 
-        if (!gameRunning) return; // Yeh loop ko rokega jab game over hoga ya stage complete
+        if (!gameRunning) return;
         update(); 
         draw(); 
         requestAnimationFrame(gameLoop); 
     }
 
     function update() {
-        if (!player) return;
+        if (!player || gamePaused) return; // Agar game paused hai, toh update mat karo
 
         if (keys.right) { player.dx = player.speed; player.facing = 1; } 
         else if (keys.left) { player.dx = -player.speed; player.facing = -1; } 
@@ -223,7 +223,7 @@ window.onload = () => {
         
         const goal = currentStageData.goal; goal.w = 80; goal.h = 120;
         if (player.x + player.width > goal.x && player.x < goal.x + goal.w && player.y + player.height > goal.y && player.y < goal.y + goal.h) {
-            gameRunning = false;
+            gamePaused = true; // Game ko pause karo, loop ko nahi
             createParticles(goal.x + goal.w / 2, goal.y + goal.h / 2, 100, 'gold');
             showMessage(`Stage ${currentStage} Complete! Score: ${score}`, "Mint NFT Reward", handleMintReward);
         }
@@ -238,11 +238,6 @@ window.onload = () => {
         if (success) {
             alert(`Congratulations! You've minted the NFT for Stage ${currentStage}!`);
             initStage(currentStage + 1);
-            // Agar agla stage hai, toh naye stage ke liye game loop ko wapas shuru karna hoga
-            if (stageData.find(s => s.level === currentStage)) {
-                gameRunning = true;
-                // gameLoop(); // Iski zaroorat nahi kyunki purana loop abhi bhi chal raha hai
-            }
         } else {
              nextActionBtn.disabled = false;
              nextActionBtn.innerText = "Mint NFT Reward";
@@ -273,7 +268,6 @@ window.onload = () => {
     // === PART 5: HELPER FUNCTIONS ===
     function resetPlayer() { 
         createParticles(player.x + player.width / 2, player.y + player.height / 2, 50, '#ff4136', 5);
-        // Poora stage reset karna hi sabse aasan tareeka hai
         initStage(currentStage);
     }
 
