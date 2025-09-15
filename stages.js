@@ -2,9 +2,8 @@
 // STAGES.JS - Game ke saare levels ka data
 //
 // Changes:
-// 1. Har level mein coins add kar diye gaye hain.
-// 2. "Screen jump" bug ko theek karne ke liye sabhi levels ki height badha di gayi hai.
-// 3. Total 6 levels hain.
+// 1. Saare levels se 'shooter' type ke enemies hata diye gaye hain.
+// 2. Baaki sab pehle jaisa hai.
 // ===================================================================================
 
 export const stageData = [
@@ -20,8 +19,7 @@ export const stageData = [
         ],
         enemies: [
             {x: 1000, y: 1350, type: 'patrol', dist: 100, s: 2},
-            {x: 2400, y: 1400, type: 'patrol', dist: 400, s: 3},
-            {x: 3800, y: 1400, type: 'shooter'}
+            {x: 2400, y: 1400, type: 'patrol', dist: 400, s: 3}
         ],
         coins: [
             {x: 1000, y: 1300}, {x: 1350, y: 1250}, {x: 2350, y: 1000},
@@ -45,8 +43,7 @@ export const stageData = [
         enemies: [
             {x:1100, y:1600, type:'patrol', dist:200, s:2}, 
             {x:1800, y:1700, type:'patrol', dist:400, s:3},
-            {x:4800, y:1700, type:'patrol', dist:250, s:4},
-            {x:7500, y:1100, type: 'shooter'}
+            {x:4800, y:1700, type:'patrol', dist:250, s:4}
         ],
         coins: [
             {x: 775, y: 1600}, {x: 1150, y: 1550}, {x: 1700, y: 1650}, {x: 1800, y: 1650},
@@ -71,9 +68,7 @@ export const stageData = [
         ],
         enemies: [
             {x:1800, y:1900, type:'patrol', dist:200, s:2},
-            {x:2500, y:1750, type:'shooter'},
-            {x:3500, y:1900, type:'patrol', dist:400, s:4},
-            {x:5400, y:1550, type:'shooter'}
+            {x:3500, y:1900, type:'patrol', dist:400, s:4}
         ],
         coins: [
             {x: 650, y: 1800}, {x: 900, y: 1750}, {x: 1150, y: 1800}, {x: 1500, y: 1850},
@@ -105,11 +100,8 @@ export const stageData = [
         ],
         enemies: [
             { x: 1300, y: 1900, type: 'patrol', dist: 200, s: 2 },
-            { x: 2100, y: 1550, type: 'shooter' },
             { x: 3000, y: 1900, type: 'patrol', dist: 300, s: 3 },
-            { x: 4200, y: 1800, type: 'shooter' },
-            { x: 7500, y: 1900, type: 'patrol', dist: 500, s: 5 },
-            { x: 8200, y: 1900, type: 'shooter' }
+            { x: 7500, y: 1900, type: 'patrol', dist: 500, s: 5 }
         ],
         coins: [
             { x: 700, y: 1750 }, { x: 1725, y: 1500 }, { x: 2150, y: 1500 },
@@ -141,9 +133,7 @@ export const stageData = [
             { x: 5600, y: 600, w: 400 }
         ],
         enemies: [
-            { x: 1300, y: 1850, type: 'shooter' },
-            { x: 3400, y: 1250, type: 'patrol', dist: 200, s: 3 },
-            { x: 4625, y: 750, type: 'shooter' }
+            { x: 3400, y: 1250, type: 'patrol', dist: 200, s: 3 }
         ],
         coins: [
             { x: 650, y: 2200 }, { x: 950, y: 2050 }, { x: 650, y: 1900 },
@@ -176,10 +166,7 @@ export const stageData = [
         enemies: [
             { x: 600, y: 1900, type: 'patrol', dist: 300, s: 3 },
             { x: 3500, y: 1900, type: 'patrol', dist: 500, s: 5 },
-            { x: 4500, y: 1900, type: 'shooter' },
-            { x: 5800, y: 1550, type: 'shooter' },
             { x: 6500, y: 1900, type: 'patrol', dist: 200, s: 8 },
-            { x: 9000, y: 1900, type: 'shooter' },
             { x: 9500, y: 1900, type: 'patrol', dist: 200, s: 4 }
         ],
         coins: [
@@ -190,3 +177,4 @@ export const stageData = [
         ]
     }
 ];
+
