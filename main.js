@@ -2,8 +2,8 @@
 // MAIN.JS - Game ka Core Logic
 //
 // Changes:
-// 1. **BUG FIX:** Falling platforms ab har baar player ke out hone par reset ho jaayenge.
-//    resetPlayer() function ab poora stage `initStage(currentStage)` se dobara shuru karta hai.
+// 1. **BUG FIX:** Player ke out hone par moving objects (enemies, platforms) ab
+//    tez nahi honge. Game loop ko theek kar diya gaya hai taaki woh dobara na shuru ho.
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -75,6 +75,8 @@ window.onload = () => {
         landingPage.style.display = 'none';
         gameContainer.style.display = 'flex';
         initStage(1);
+        // Game loop ko sirf ek baar yahan se shuru karna hai
+        gameLoop();
     });
     
     getGmonadBtn.addEventListener('click', () => window.open('https://faucet.monad.xyz/', '_blank'));
@@ -129,11 +131,11 @@ window.onload = () => {
         
         gameRunning = true; 
         messageBox.style.display = 'none'; 
-        gameLoop();
+        // gameLoop() ko yahan se hata diya gaya hai
     }
 
     function gameLoop() { 
-        if (!gameRunning) return; 
+        if (!gameRunning) return; // Yeh loop ko rokega jab game over hoga ya stage complete
         update(); 
         draw(); 
         requestAnimationFrame(gameLoop); 
@@ -236,6 +238,11 @@ window.onload = () => {
         if (success) {
             alert(`Congratulations! You've minted the NFT for Stage ${currentStage}!`);
             initStage(currentStage + 1);
+            // Agar agla stage hai, toh naye stage ke liye game loop ko wapas shuru karna hoga
+            if (stageData.find(s => s.level === currentStage)) {
+                gameRunning = true;
+                // gameLoop(); // Iski zaroorat nahi kyunki purana loop abhi bhi chal raha hai
+            }
         } else {
              nextActionBtn.disabled = false;
              nextActionBtn.innerText = "Mint NFT Reward";
@@ -266,7 +273,7 @@ window.onload = () => {
     // === PART 5: HELPER FUNCTIONS ===
     function resetPlayer() { 
         createParticles(player.x + player.width / 2, player.y + player.height / 2, 50, '#ff4136', 5);
-        // BUG FIX: Poora stage hi dobara shuru kar do taaki falling platforms reset ho jaayein
+        // Poora stage reset karna hi sabse aasan tareeka hai
         initStage(currentStage);
     }
 
