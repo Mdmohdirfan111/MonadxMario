@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- ## FINAL MUSIC FIX ## -->
-    <!-- Security policy ko naye music source (Pixabay) ke liye update kiya gaya hai -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://esm.sh https://cdnjs.cloudflare.com; media-src https://cdn.pixabay.com;">
+    <!-- ## IMPORTANT UPDATE ## -->
+    <!-- Security policy ko viem library (esm.sh) ke liye update kiya gaya hai -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://esm.sh;">
     
     <title>Monad Mario</title>
     
+    <!-- File path ko live hosting ke liye theek kiya gaya hai -->
     <link rel="stylesheet" href="./style.css">
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -43,9 +44,6 @@
     <div id="game-container" style="display: none;">
         
         <canvas id="gameCanvas"></canvas>
-
-        <!-- Mute/Unmute Button -->
-        <div id="mute-btn" style="position: absolute; top: 20px; right: 20px; cursor: pointer; font-size: 24px;">🔊</div>
         
         <div id="message-box" style="display: none;">
             <h2 id="message-title"></h2>
@@ -53,10 +51,7 @@
         </div>
     </div>
 
-    <!-- Howler.js Library ko add karna -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
-
-    <!-- Hamari game ki script -->
+    <!-- File path ko live hosting ke liye theek kiya gaya hai -->
     <script src="./main.js" type="module"></script>
 </body>
 </html>
