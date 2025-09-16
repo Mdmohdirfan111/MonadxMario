@@ -2,9 +2,8 @@
 // MAIN.JS - Game ka Core Logic
 //
 // Changes:
-// 1. **NEW FEATURE:** Background music aur sound effects (jump, coin, enemy hit, stage complete) add kiye gaye hain.
-// 2. Howler.js library ka use kiya gaya hai.
-// 3. Ek mute/unmute button bhi add kiya gaya hai.
+// 1. **BUG FIX:** Stage complete karne ke baad ab agla stage sahi se load hoga.
+//    Game loop ko rokne ke bajaye ab game ko pause karne ka naya logic daala gaya hai.
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -28,21 +27,6 @@ window.onload = () => {
     const messageBox = document.getElementById('message-box');
     const messageTitle = document.getElementById('message-title');
     const nextActionBtn = document.getElementById('next-action-btn');
-    const muteBtn = document.getElementById('mute-btn');
-
-    // === MUSIC & SOUND SETUP ===
-    const sounds = {
-        music: new Howl({
-            src: ['https://assets.mixkit.co/music/preview/mixkit-hip-hop-02-738.mp3'],
-            loop: true,
-            volume: 0.3
-        }),
-        jump: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-player-jumping-in-a-video-game-2043.mp3'], volume: 0.5 }),
-        coin: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-retro-arcade-casino-notification-211.mp3'], volume: 0.4 }),
-        hit: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-small-hit-in-a-game-2072.mp3'], volume: 0.6 }),
-        win: new Howl({ src: ['https://assets.mixkit.co/sfx/preview/mixkit-video-game-win-2016.mp3'], volume: 0.7 })
-    };
-    let isMuted = false;
 
     landingPage.style.display = 'block';
     gameContainer.style.display = 'none';
@@ -60,12 +44,6 @@ window.onload = () => {
 
 
     // === PART 2: UI & WALLET EVENT LISTENERS ===
-    muteBtn.addEventListener('click', () => {
-        isMuted = !isMuted;
-        Howler.mute(isMuted);
-        muteBtn.textContent = isMuted ? '🔇' : '🔊';
-    });
-
     function showMessage(title, buttonText, onButtonClick) {
         messageTitle.innerText = title;
         nextActionBtn.innerText = buttonText;
@@ -96,10 +74,6 @@ window.onload = () => {
     playGameBtn.addEventListener('click', () => {
         landingPage.style.display = 'none';
         gameContainer.style.display = 'flex';
-        // User ke interaction ke baad hi music chala sakte hain
-        if (!sounds.music.playing()) {
-            sounds.music.play();
-        }
         initStage(1);
         // Game loop ko sirf ek baar yahan se shuru karna hai
         gameLoop();
@@ -176,7 +150,6 @@ window.onload = () => {
 
         if (keys.up && player.onGround) { 
             player.dy = player.jumpPower; 
-            sounds.jump.play(); // Jump sound
             createParticles(player.x + player.width / 2, player.y + player.height, 10, '#ffffff'); 
         }
         
@@ -228,8 +201,7 @@ window.onload = () => {
             if (isColliding) {
                 const wasAbove = (prevPlayerY + player.height) <= e.y + 10;
                 if (player.dy > 0 && wasAbove) {
-                    score += 50;
-                    sounds.hit.play(); // Enemy hit sound
+                    score += 50; 
                     e.isDead = true; 
                     player.dy = -10; 
                     createParticles(e.x + e.width / 2, e.y, 30, '#ff4136');
@@ -244,7 +216,6 @@ window.onload = () => {
             const isColliding = player.x < coin.x + 30 && player.x + player.width > coin.x && player.y < coin.y + 30 && player.y + player.height > coin.y;
             if (isColliding) {
                 score += 10;
-                sounds.coin.play(); // Coin collect sound
                 createParticles(coin.x + 15, coin.y + 15, 15, 'gold', 3);
                 currentStageData.coins.splice(i, 1);
             }
@@ -252,8 +223,7 @@ window.onload = () => {
         
         const goal = currentStageData.goal; goal.w = 80; goal.h = 120;
         if (player.x + player.width > goal.x && player.x < goal.x + goal.w && player.y + player.height > goal.y && player.y < goal.y + goal.h) {
-            gamePaused = true;
-            sounds.win.play(); // Stage complete sound
+            gamePaused = true; // Game ko pause karo, loop ko nahi
             createParticles(goal.x + goal.w / 2, goal.y + goal.h / 2, 100, 'gold');
             showMessage(`Stage ${currentStage} Complete! Score: ${score}`, "Mint NFT Reward", handleMintReward);
         }
@@ -297,7 +267,6 @@ window.onload = () => {
 
     // === PART 5: HELPER FUNCTIONS ===
     function resetPlayer() { 
-        sounds.hit.play(); // Player out sound
         createParticles(player.x + player.width / 2, player.y + player.height / 2, 50, '#ff4136', 5);
         initStage(currentStage);
     }
