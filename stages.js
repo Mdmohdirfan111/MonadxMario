@@ -52,19 +52,24 @@ export const stageData = [
         ]
     },
 
-    // === LEVEL 3: THE DROP ===
+    // === LEVEL 3: THE DROP (Updated & Easier) ===
     {
         level: 3, width: 7000, height: 2000, 
         playerStart: { x: 100, y: 1800 }, 
         goal: { x: 6800, y: 1150 },
         platforms: [
-            {x:0, y:1950, w:500}, {x:600, y:1900, w:150, type:'falling'}, 
-            {x:850, y:1850, w:150, type:'falling'}, {x:1100, y:1900, w:150, type:'falling'},
+            {x:0, y:1950, w:500}, 
+            // Falling platforms ko thoda kareeb kar diya hai
+            {x:600, y:1900, w:150, type:'falling'}, 
+            {x:850, y:1850, w:150, type:'falling'}, 
+            {x:1100, y:1900, w:150, type:'falling'},
             {x:1400, y:1950, w:800}, {x:2500, y:1800, w:100}, {x:2300, y:1950, w:400},
             {x:3000, y:1950, w:1500}, 
-            // V-- THEEK KIYA GAYA PLATFORM --V
-            {x:4800, y:1900, w:100, type:'moving', dir:'vertical', dist:200, s:2}, 
-            // ^-- SPEED '3' SE '2' AUR DISTANCE '300' SE '200' KAR DIYA --^
+            
+            // Mushkil moving platform ko hata kar ek naya, aasan platform daala hai
+            {x:4800, y:1900, w:100}, // Yeh ek simple, static platform hai
+            {x:5050, y:1800, w:100}, // Isse agle jump ke liye
+            
             {x:5200, y:1600, w:400}, {x:5800, y:1500, w:100, type:'falling'},
             {x:6100, y:1400, w:100, type:'falling'}, {x:6400, y:1300, w:100, type:'falling'},
             {x:6700, y:1250, w:200}
@@ -75,7 +80,7 @@ export const stageData = [
         ],
         coins: [
             {x: 650, y: 1800}, {x: 900, y: 1750}, {x: 1150, y: 1800}, {x: 1500, y: 1850},
-            {x: 1600, y: 1850}, {x: 1700, y: 1850}, {x: 3800, y: 1850}, {x: 4825, y: 1700},
+            {x: 1600, y: 1850}, {x: 1700, y: 1850}, {x: 3800, y: 1850}, {x: 4825, y: 1800},
             {x: 5300, y: 1500}, {x: 6800, y: 1050}
         ]
     },
