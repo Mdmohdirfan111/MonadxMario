@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- ## FINAL UPDATE ## -->
-    <!-- Security policy ko ab music files (.mp3) load karne ki permission bhi de di gayi hai -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://esm.sh https://cdnjs.cloudflare.com; media-src https://assets.mixkit.co;">
+    <!-- ## FINAL MUSIC FIX ## -->
+    <!-- Security policy ko naye music source (Pixabay) ke liye update kiya gaya hai -->
+    <meta http-equiv="Content-Security-Policy" content="script-src 'self' https://esm.sh https://cdnjs.cloudflare.com; media-src https://cdn.pixabay.com;">
     
     <title>Monad Mario</title>
     
-    <!-- File path ko live hosting ke liye theek kiya gaya hai -->
     <link rel="stylesheet" href="./style.css">
     
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -57,7 +56,7 @@
     <!-- Howler.js Library ko add karna -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/howler/2.2.4/howler.min.js"></script>
 
-    <!-- File path ko live hosting ke liye theek kiya gaya hai -->
+    <!-- Hamari game ki script -->
     <script src="./main.js" type="module"></script>
 </body>
 </html>
