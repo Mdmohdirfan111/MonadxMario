@@ -1,9 +1,5 @@
 // ===================================================================================
-// MAIN.JS - Game ka Core Logic
-//
-// Changes:
-// 1. **BUG FIX:** Stage complete karne ke baad ab agla stage sahi se load hoga.
-//    Game loop ko rokne ke bajaye ab game ko pause karne ka naya logic daala gaya hai.
+// MAIN.JS - Game ka Final Core Logic (Bina Music Ke)
 // ===================================================================================
 
 // Wallet, Stages, aur Drawing files se zaroori cheezein import karna
@@ -43,7 +39,7 @@ window.onload = () => {
     initializeBackground(canvas);
 
 
-    // === PART 2: UI & WALLET EVENT LISTENERS ===
+    // === PART 2: UI & EVENT LISTENERS ===
     function showMessage(title, buttonText, onButtonClick) {
         messageTitle.innerText = title;
         nextActionBtn.innerText = buttonText;
@@ -75,7 +71,6 @@ window.onload = () => {
         landingPage.style.display = 'none';
         gameContainer.style.display = 'flex';
         initStage(1);
-        // Game loop ko sirf ek baar yahan se shuru karna hai
         gameLoop();
     });
     
@@ -96,7 +91,7 @@ window.onload = () => {
     function initStage(levelNumber) {
         const level = stageData.find(s => s.level === levelNumber);
         if (!level) { 
-            gameRunning = false; // Game ko poori tarah se rok do
+            gameRunning = false;
             showMessage("YOU WIN!", "Play Again?", () => location.reload());
             return;
         }
@@ -105,9 +100,7 @@ window.onload = () => {
         currentStageData = JSON.parse(JSON.stringify(level)); 
         particles = [];
         
-        if (!currentStageData.coins) {
-            currentStageData.coins = [];
-        }
+        if (!currentStageData.coins) currentStageData.coins = [];
         
         currentStageData.platforms.forEach(p => { 
             p.width = p.w; 
@@ -129,7 +122,7 @@ window.onload = () => {
             } 
         };
         
-        gamePaused = false; // Naye stage ke liye game ko unpause karo
+        gamePaused = false; 
         gameRunning = true; 
         messageBox.style.display = 'none';
     }
@@ -142,7 +135,7 @@ window.onload = () => {
     }
 
     function update() {
-        if (!player || gamePaused) return; // Agar game paused hai, toh update mat karo
+        if (!player || gamePaused) return;
 
         if (keys.right) { player.dx = player.speed; player.facing = 1; } 
         else if (keys.left) { player.dx = -player.speed; player.facing = -1; } 
@@ -165,22 +158,14 @@ window.onload = () => {
         
         currentStageData.platforms.forEach(p => { 
             if (p.type === 'moving') { 
-                if (p.dir === 'vertical') { 
-                    p.y += p.speed; 
-                    if (Math.abs(p.y - p.originalY) >= p.distance) p.speed *= -1; 
-                } else { 
-                    p.x += p.speed; 
-                    if (Math.abs(p.x - p.originalX) >= p.distance) p.speed *= -1; 
-                } 
+                if (p.dir === 'vertical') { p.y += p.speed; if (Math.abs(p.y - p.originalY) >= p.distance) p.speed *= -1; } 
+                else { p.x += p.speed; if (Math.abs(p.x - p.originalX) >= p.distance) p.speed *= -1; } 
             } 
             if (p.type === 'falling' && p.isFalling) p.y += 5; 
         });
         currentStageData.enemies.forEach(e => { 
             if (e.isDead) return; 
-            if (e.type === 'patrol') { 
-                e.x += e.speed; 
-                if (Math.abs(e.x - e.originalX) >= e.distance) e.speed *= -1; 
-            }
+            if (e.type === 'patrol') { e.x += e.speed; if (Math.abs(e.x - e.originalX) >= e.distance) e.speed *= -1; }
         });
         
         currentStageData.platforms.forEach(p => { 
@@ -223,7 +208,7 @@ window.onload = () => {
         
         const goal = currentStageData.goal; goal.w = 80; goal.h = 120;
         if (player.x + player.width > goal.x && player.x < goal.x + goal.w && player.y + player.height > goal.y && player.y < goal.y + goal.h) {
-            gamePaused = true; // Game ko pause karo, loop ko nahi
+            gamePaused = true;
             createParticles(goal.x + goal.w / 2, goal.y + goal.h / 2, 100, 'gold');
             showMessage(`Stage ${currentStage} Complete! Score: ${score}`, "Mint NFT Reward", handleMintReward);
         }
